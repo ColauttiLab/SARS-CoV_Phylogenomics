@@ -7,11 +7,11 @@ Instructions
 
 ## TO DO:
 
-- [] Add all Wuhan strains
-- [] Use updated Wuhan root: Wuhan/WH04/2020
-- [] check/clean up libraries in NextStrainSetup.R & NextStrainAnalysis_Main.R
+- [ ] Add all Wuhan strains
+- [ ] Use updated Wuhan root: Wuhan/WH04/2020
+- [ ] check/clean up libraries in NextStrainSetup.R & NextStrainAnalysis_Main.R
 - [X] retrieveSeq.sh -- replace directories with generic names
-- [] Add code for phylogeny
-  - [] Add pangolin lineage names to phylogeny (A, B, B1, B1.5, etc.)
+- [ ] Add code for phylogeny
+  - [ ] Add pangolin lineage names to phylogeny (A, B, B1, B1.5, etc.)
 
   
