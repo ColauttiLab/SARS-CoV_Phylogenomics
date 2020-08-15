@@ -3,7 +3,7 @@
 Analysis Files from 2020 COV-19 genome study
 
 Instructions
-1. Replace generic directories in scripts/retrieveSeq.sh with local blast database 
+1. You may need to change your local path in scripts/retrieveSeq.sh to point to blast (especially if you aren't using a Mac) 
 
 ## TO DO:
 
