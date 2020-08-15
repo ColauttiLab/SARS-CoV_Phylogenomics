@@ -140,7 +140,7 @@ nextstrain_final$ID <-paste0(nextstrain_final$region, "_", nextstrain_final$coun
 finalDF<-rbind.fill(nextstrain_final,seqDF) #Add target DF to main DF
 
 # Add Wuhan Samples
-nextstrain_samples <- readDNAStringSet("~/ColauttiLabScratch/COVID-19/Data/05_15_2020/nextstrain_sequences_05152020.fasta")#readDNAStringSet("inputdata/nextstrain_sequences_05152020.fasta")
+nextstrain_samples <- readDNAStringSet("inputdata/nextstrain_sequences_05152020.fasta")
 wuhan_samples <- nextstrain_samples[ grep("Wuhan", nextstrain_samples@ranges@NAMES) ]
 wuhan_df <- data.frame(ID=paste(wuhan_samples@ranges@NAMES), Seqs=paste(wuhan_samples))
 finalDF<-rbind.fill(finalDF,wuhan_df)
