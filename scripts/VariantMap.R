@@ -2,7 +2,7 @@ library(tidyr)
 library(dplyr)
 library(ggplot2)
 
-polymorph<-read.csv("polymorphicAlignment_no1921.csv", stringsAsFactors = F)
+polymorph<-read.csv("intermediatedata/polymorphicAlignment_no1921.csv", stringsAsFactors = F)
 colnames(polymorph) <- gsub("X","",colnames(polymorph))
 colnames(polymorph)[1] <- "sample"
 polymorph$sample[30] <- "Wuhan-Hu-1/2019" #Change index number based on which file
@@ -21,13 +21,24 @@ for (y in 1:nrow(polymorph)) {
 long<- polymorph %>% 
   pivot_longer(-sample, names_to = "position", values_to = "substitution")
 
-long$position <- factor(long$position,levels=c(unique(long$position)))
+long<-long[grep("[ATGC]",long$substitution),]
+
+
+#long$position <- factor(long$position,levels=c(unique(long$position)))
+long$position<-as.numeric(long$position)
 long$sample <- factor(long$sample,levels=polymorph$sample[order(suborder)])
 
-palette <- c("#FFFFFF","#A9A9A9","#007FFF","#99001C","#008000","#fffc00")
+palette <- c("#007FFF","#99001C","#008000","#fffc00")
 
-ggplot(long, aes(x=position, y=sample)) + 
-  geom_tile(aes(fill=substitution),colour = "white") + 
+VarPlot<-ggplot(long, aes(x=position, y=sample)) + 
+  geom_tile(aes(colour=substitution, fill=substitution),size=1.2) + 
   scale_fill_manual(values=palette) +
-  theme_gray() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  scale_colour_manual(values=palette) +
+  theme_classic() 
+
+VarPlot
+
+pdf(file="outputs/figures/Fig1.pdf",width=8,height=4)
+  VarPlot
+dev.off()
+

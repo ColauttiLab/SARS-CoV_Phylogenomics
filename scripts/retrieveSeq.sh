@@ -1,5 +1,5 @@
 #!/bin/bash
-FILE="./seqs.txt"
+FILE="outputs/seqs.txt"
 if [ ! -f "$FILE" ]
 then
     touch $FILE
@@ -10,6 +10,6 @@ fi
 
 while read -r CURRENT_LINE
     do
-        /usr/local/ncbi/blast/bin/blastdbcmd -db ~/ColauttiLabScratch/COVID-19/Databases/nextstrain_sequences_051520/nextstrain_sequences_051520.fasta -entry $CURRENT_LINE | tee -a ./seqs.txt
+        /usr/local/ncbi/blast/bin/blastdbcmd -db ~/Dropbox/_Synced/PROJECTS/COVID_Sequencing/QGLO_COVID/inputdata/nextstrain_sequences_051520/nextstrain_sequences_051520.fasta -entry $CURRENT_LINE | tee -a ./seqs.txt
         ((LINE++))
-done < "./GBACC.txt"
+done < "outputs/GBACC.txt"
