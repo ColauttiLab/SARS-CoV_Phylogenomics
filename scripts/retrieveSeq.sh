@@ -1,5 +1,5 @@
 #!/bin/bash
-FILE="outputs/seqs.txt"
+FILE="./outputs/seqs.txt"
 if [ ! -f "$FILE" ]
 then
     touch $FILE
@@ -12,6 +12,6 @@ fi
 
 while read -r CURRENT_LINE
     do
-        /usr/local/ncbi/blast/bin/blastdbcmd -db ./inputdata/nextstrain_sequences_051520/nextstrain_sequences_051520.fasta -entry $CURRENT_LINE | tee -a ./seqs.txt
+        /usr/local/ncbi/blast/bin/blastdbcmd -db ./inputdata/nextstrain_sequences_051520/nextstrain_sequences_051520.fasta -entry $CURRENT_LINE | tee -a ./outputs/seqs.txt
         ((LINE++))
-done < "outputs/GBACC.txt"
+done < "./outputs/GBACC.txt"
