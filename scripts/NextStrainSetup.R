@@ -139,23 +139,16 @@ nextstrain_final$ID <-paste0(nextstrain_final$region, "_", nextstrain_final$coun
 # Add samples to br dataframe
 finalDF<-rbind.fill(nextstrain_final,seqDF) #Add target DF to main DF
 
+# Add Wuhan Samples
+nextstrain_samples <- readDNAStringSet("~/ColauttiLabScratch/COVID-19/Data/05_15_2020/nextstrain_sequences_05152020.fasta")#readDNAStringSet("inputdata/nextstrain_sequences_05152020.fasta")
+wuhan_samples <- nextstrain_samples[ grep("Wuhan", nextstrain_samples@ranges@NAMES) ]
+wuhan_df <- data.frame(ID=paste(wuhan_samples@ranges@NAMES), Seqs=paste(wuhan_samples))
+finalDF<-rbind.fill(finalDF,wuhan_df)
+
 #To Fasta
 seqinr::write.fasta(paste(finalDF$Seqs), paste0(finalDF$ID), "intermediatedata/nextstrain_br.fasta")
 
 #Align using MAFFT:
 # % mafft --auto input > output
-
-#-------------------------------------Adding Wuhan Root-----------------------------
-nextstrain_samples <- readDNAStringSet("inputdata/nextstrain_sequences_05152020.fasta")
-wuhan_df <- data.frame(ID=c("Asia_Wuhan_Hubei (Wuhan-Hu-1/2019)"), Seqs=paste(nextstrain_samples$`Wuhan-Hu-1/2019`))
-write.fasta(paste(wuhan_df$Seqs), paste(wuhan_df$ID), "intermediatedata/WuhanIsolate.fasta")
-#running % mafft --auto --thread -1 --keeplength --addfragments othersequences referencesequence > output
-
-#------------------Adding Samples 19 21 AND ancestral sequences to alignment -----------------------------
-#
-samples1921 <- samples[c(8, 10), ] 
-writeXStringSet(samples1921,"intermediatedata/S1921.fasta")
-#running % mafft --auto --thread -1 --keeplength --addfragments othersequences referencesequence > output
-
 
 ## Moved June 4 code to new file "NextStrainAnalysis_Main.R"
