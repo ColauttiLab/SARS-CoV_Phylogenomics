@@ -1,5 +1,57 @@
+#Functions
 
-#-------------------------------------June 2nd-----------------------------
+optimize_db_parsimony<-function(phy_object) {
+  dna_dist <- dist.ml(phy_object)
+  treeNJ <- NJ(dna_dist)
+  treeUPGMA <- upgma(dna_dist)
+  if (parsimony(treeNJ,phy_object) < parsimony(treeUPGMA,phy_object)) {
+    fit = pml(treeNJ,phy_object)
+  } else {
+    fit = pml(treeUPGMA,phy_object)
+  }
+  return(fit)
+} #optimize distance based methods NJ and UPGMA
+
+optimize_likelihood<-function(phy_object, pml_object) {
+  model_test <- modelTest(phy_object)
+  model_test <- model_test %>% arrange(logLik)
+  params <- strsplit(paste(model_test[nrow(model_test),]$Model),"\\+")
+  model <- params[[1]][1]
+  Gamma <- FALSE
+  Inv <- FALSE
+  if (length(params[[1]]) == 2) {
+    if (params[[1]][2] == "I") {
+      Inv = TRUE
+    } else {
+      Gamma = TRUE
+    }
+  } 
+  if (length(params[[1]]) == 3) {
+    Gamma <- TRUE
+    Inv <- TRUE
+  }
+  print("----------------------------------------------------------------------")
+  fit <- optim.pml(pml_object, model = model, optInv = Inv, optGamma = Gamma, rearrangement = "stochastic")
+  print("----------------------------------------------------------------------")
+  print(model_test[nrow(model_test),])
+  print(paste0("Gamma = ",Gamma))
+  print(paste0("Inv = ", Inv))
+  print("----------------------------------------------------------------------")
+  print(paste0("Unoptimized loglikelihood: ",pml_object$logLik))
+  print("----------------------------------------------------------------------")
+  print(paste0("Optimized loglikelihood: ",fit$logLik))
+  print("----------------------------------------------------------------------")
+  return(fit)
+}  #Maximum likeliehood
+
+bootstrap_tree<-function(fitted_model,bs_iterations,scale_bar,out){
+  bs <- bootstrap.pml(fitted_model, bs=bs_iterations, optNni=TRUE, multicore=F, control = pml.control(trace=0))
+  pdf(out,width=13,height=10)
+  bstree<-plotBS(midpoint(fitted_model$tree),bs, p = 70, type="p")
+  add.scale.bar(length = scale_bar, cex = 0.9, font = 2)
+  dev.off()
+  return(bstree)
+} #Bootstrap
 
 # Align sequences
 aligned_seqs <- readDNAStringSet("06022020alignment.fasta")
@@ -32,6 +84,7 @@ Samples <- dplyr::bind_rows(DupSampleList)
 
 
 #-------------------------------------Error Correcting-----------------------------
+# Might be OUTDATED.
 ErrorDF <- aligned_df[grep("Denmark/ALAB-SSI-1272|Denmark/ALAB-SSI-246|Denmark/ALAB-SSI-660|Denmark/ALAB-SSI-662|England/CAMB-71BDC|England/CAMB-71DE5|England/CAMB-738E2|England/CAMB-73DC5|England/CAMB-74465|England/CAMB-789F9|England/CAMB-79AF5", aligned_df$ID),]
 ErrorList <- list()
 for (x in 1:nrow(ErrorDF)) {
