@@ -1,2 +1,2 @@
 #!/bin/bash
-makeblastdb -in nextstrain_sequences_051520.fasta -parse_seqids -dbtype 'nucl' -hash_index -title "nextstraindb05152020" 
+makeblastdb -in ./inputdata/nextstrain_sequences.fasta -parse_seqids -dbtype 'nucl' -hash_index -title "nextstraindb" 

@@ -1,15 +1,15 @@
 #06/02/2020 script
-library(phangorn)
-library(seqinr)
+#library(phangorn)
+#library(seqinr)
 library(Biostrings)
-library(dplyr)
-library(ape)
-library(ggtree)
-library(ggplot2)
+#library(dplyr)
+#library(ape)
+#library(ggtree)
+#library(ggplot2)
 library(rBLAST) 
-library(genbankr) 
-library(seqRFLP)
-library(plyr)
+#library(genbankr) 
+#library(seqRFLP)
+#library(plyr)
 
 #-------------------------------------Functions-------------------------------------
 ##From phyloBlast package (WIP)
@@ -96,8 +96,8 @@ bootstrap_tree<-function(fitted_model,bs_iterations,scale_bar,out){
 ##Blasting sequences on nextstrain database (excluding samples 19,21)
 #Load data
 samples <- readDNAStringSet("inputdata/QGLO_sequences.fasta")
-nextstrain_metadata <- read.csv("inputdata/nextstrain_metadata_051520.csv")
-nextstrain_db <- blast("inputdata/nextstrain_sequences_051520/nextstrain_sequences_051520.fasta")
+nextstrain_metadata <- read.delim("inputdata/nextstrain_metadata.tsv")
+nextstrain_db <- blast("inputdata/nextstrain_sequences.fasta")
 
 #Remove outliers 
 # samples<- samples[-c(8, 10), ] 
@@ -140,7 +140,7 @@ nextstrain_final$ID <-paste0(nextstrain_final$region, "_", nextstrain_final$coun
 finalDF<-rbind.fill(nextstrain_final,seqDF) #Add target DF to main DF
 
 # Add Wuhan Samples
-nextstrain_samples <- readDNAStringSet("inputdata/nextstrain_sequences_05152020.fasta")
+nextstrain_samples <- readDNAStringSet("inputdata/nextstrain_sequences.fasta")
 wuhan_samples <- nextstrain_samples[ grep("Wuhan", nextstrain_samples@ranges@NAMES) ]
 wuhan_df <- data.frame(ID=paste(wuhan_samples@ranges@NAMES), Seqs=paste(wuhan_samples))
 finalDF<-rbind.fill(finalDF,wuhan_df)
