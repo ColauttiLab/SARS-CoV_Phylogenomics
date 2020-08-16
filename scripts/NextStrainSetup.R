@@ -21,17 +21,17 @@ blast_seq<-function(refseq ,blastDB, mismatches, hits = NA){
 } #Perform blast search and return dataframe of blast hits that meet criteria
 
 retrieve_seqs <- function(dataframe, dbpath) {
-  write.table(dataframe$SubjectID, file = "outputs/GBACC.txt", row.names = F, col.names = F, quote = F)
-  system('scripts/retrieveSeq.sh')
-  Seqs <- readDNAStringSet("outputs/seqs.txt")
+  write.table(dataframe$SubjectID, file = "./outputs/GBACC.txt", row.names = F, col.names = F, quote = F)
+  system('./scripts/retrieveSeq.sh')
+  Seqs <- readDNAStringSet("./outputs/seqs.txt")
   seqDF <- data.frame(SubjectID = paste(Seqs@ranges@NAMES), Seqs = paste(Seqs), stringsAsFactors = FALSE)
   return(seqDF)
 } #Interacts with shell script to return blast result sequences
 
 #Load data
-samples <- readDNAStringSet("inputdata/QGLO_sequences08.fasta")
-nextstrain_metadata <- read.csv("inputdata/metadata_0815.csv")
-nextstrain_db <- blast("inputdata/nextstrainDB/nextstrainDB")
+samples <- readDNAStringSet("./inputdata/QGLO_sequences.fasta")
+nextstrain_metadata <- read.delim("./inputdata/nextstrain_metadata.tsv")
+nextstrain_db <- blast("./intermediatedata/nextstrain_sequences/nextstrainDB")
 
 #Create DF
 seqDF <- data.frame(Seqs = paste(samples), ID = gsub('2019-nCoV_MN908947\\|','',paste(samples@ranges@NAMES)), stringsAsFactors = F)
@@ -63,7 +63,7 @@ blast_results <- blast_results[blast_results$Alignment.Length > 20000,]
 blast_results$Seqs <- substr(blast_results$Seqs, blast_results$S.start, (blast_results$Qlen +blast_results$S.start))
 
 # Add Wuhan Samples
-nextstrain_samples <- readDNAStringSet("inputdata/sequences_0815.fasta")
+nextstrain_samples <- readDNAStringSet("./inputdata/nextstrain_sequences.fasta")
 wuhan_samples <- nextstrain_samples[ grep("Wuhan", nextstrain_samples@ranges@NAMES) ]
 wuhan_df <- data.frame(SubjectID=paste(wuhan_samples@ranges@NAMES), Seqs=paste(wuhan_samples))
 blast_results <- rbind.fill(blast_results,wuhan_df)
