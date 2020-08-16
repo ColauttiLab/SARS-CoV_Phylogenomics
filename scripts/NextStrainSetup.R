@@ -21,9 +21,9 @@ blast_seq<-function(refseq ,blastDB, mismatches, hits = NA){
 } #Perform blast search and return dataframe of blast hits that meet criteria
 
 retrieve_seqs <- function(dataframe, dbpath) {
-  write.table(dataframe$SubjectID, file = "./outputs/GBACC.txt", row.names = F, col.names = F, quote = F)
+  write.table(dataframe$SubjectID, file = "./intermediate/GBACC.txt", row.names = F, col.names = F, quote = F)
   system('./scripts/retrieveSeq.sh')
-  Seqs <- readDNAStringSet("./outputs/seqs.txt")
+  Seqs <- readDNAStringSet("./intermediate/seqs.txt")
   seqDF <- data.frame(SubjectID = paste(Seqs@ranges@NAMES), Seqs = paste(Seqs), stringsAsFactors = FALSE)
   return(seqDF)
 } #Interacts with shell script to return blast result sequences
@@ -80,7 +80,7 @@ nextstrain_final$ID <-paste0(nextstrain_final$region, "_", nextstrain_final$coun
 finalDF<-rbind.fill(nextstrain_final,seqDF) #Add target DF to main DF
 
 #To Fasta
-seqinr::write.fasta(paste(finalDF$Seqs), paste0(finalDF$ID), "outputs/nextstrain_br.fasta")
+seqinr::write.fasta(paste(finalDF$Seqs), paste0(finalDF$ID), "./intermediatedata/nextstrain_br.fasta")
 
 #Align using MAFFT:
 # % mafft --auto input > output

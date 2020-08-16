@@ -9,6 +9,8 @@ https://www.biorxiv.org/content/10.1101/2020.06.25.171744v1
 1. Download latest nextstrain squence data from GISAID (https://www.gisaid.org)
   * OR to reproduce the published analysis, download the archived sequence data from <<LINK>>
 2. Run makeBlastDB.sh to create a local fasta database for the nextseq sequences (this will take a while)
+3. Run NextStrainSetup.R to BLAST reference files to nextstrain sequences and subset analysis
+4. Run mafftalign.sh to create an alignment of the full set of sequences
 
 ## Instructions
 1. You may need to change your local path in scripts/retrieveSeq.sh to point to blast (especially if you aren't using a Mac) 

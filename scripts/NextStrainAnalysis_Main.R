@@ -54,7 +54,7 @@ bootstrap_tree<-function(fitted_model,bs_iterations,scale_bar,out){
 } #Bootstrap
 
 # Align sequences
-aligned_seqs <- readDNAStringSet("06022020alignment.fasta")
+aligned_seqs <- readDNAStringSet("./intermediatedata/06022020alignment.fasta")
 aligned_df <- data.frame(ID = gsub("Sample ", "Sample_", aligned_seqs@ranges@NAMES), 
                          seqs = substr(paste(aligned_seqs),11,29683),
                          Region = gsub("\\_.*", "", aligned_seqs@ranges@NAMES), 

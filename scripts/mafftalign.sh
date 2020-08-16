@@ -1,2 +1,2 @@
 #!/bin/bash
-mafft --auto nextstrain_br.fasta > 2bpBRalignment.afa
+mafft --auto ./intermediatedata/nextstrain_br.fasta > ./intermediatedata/BRalignment2bp.afa
