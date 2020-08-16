@@ -1,8 +1,16 @@
-# QGLO_COVID
+# COVID Analysis Pipeline
 
-Analysis Files from 2020 COV-19 genome study
+Analysis Files from 2020 COV-19 genome study by Sjaarda et al:
+"Chasing the origin of SARS-CoV-2 in Canada’s COVID-19 cases: A genomics study"
+https://www.biorxiv.org/content/10.1101/2020.06.25.171744v1
 
-Instructions
+# scripts Overview
+
+1. Download latest nextstrain squence data from GISAID (https://www.gisaid.org)
+  * OR to reproduce the published analysis, download the archived sequence data from <<LINK>>
+2. Run makeBlastDB.sh to create a local fasta database for the nextseq sequences (this will take a while)
+
+## Instructions
 1. You may need to change your local path in scripts/retrieveSeq.sh to point to blast (especially if you aren't using a Mac) 
 
 ## TO DO:
@@ -13,5 +21,6 @@ Instructions
 - [X] retrieveSeq.sh -- replace directories with generic names
 - [ ] Add code for phylogeny
   - [ ] Add pangolin lineage names to phylogeny (A, B, B1, B1.5, etc.)
-
+- [ ] Add link to data archive
+- [ ] Add citation to paper
   
