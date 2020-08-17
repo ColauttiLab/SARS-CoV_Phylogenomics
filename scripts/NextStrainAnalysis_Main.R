@@ -1,5 +1,7 @@
-library(ape)
+library(phangorn)
 library(Biostrings)
+library(ips)
+library(magrittr)
 
 #Functions
 
@@ -56,19 +58,25 @@ bootstrap_tree<-function(fitted_model,bs_iterations,scale_bar,out){
   return(bstree)
 } #Bootstrap
 
-# Align sequences
-aligned_seqs <- readDNAStringSet("./intermediatedata/BRalignment2bp.afa")
+# Trim alignment
+alignment <- read.dna("intermediatedata/BRalignment2bp.afa", "fasta")
+#checkAlignment(test, plot = FALSE)
+trimmed_alignment <- trimEnds(alignment, min.n.seq = 100) # Variable to play with (see documentation). This affects # of objs in uniq_samples by trimming
+#checkAlignment(test, plot = FALSE)
+aligned_seqs <- trimmed_alignment %>% as.list %>% as.character %>% lapply(.,paste0,collapse="") %>% unlist %>% DNAStringSet
+
 aligned_df <- data.frame(ID = gsub("Sample ", "Sample_", aligned_seqs@ranges@NAMES), 
-                         seqs = paste(aligned_seqs),
+                         # Want to get rid of substr... The trimEnds function should remove boarder differences so that substr not needed
+                         # For example, without substr uniq_samples(line79) = 24objs, with uniq_samples = 23 objs. Difference due to cutting out first 11 chars
+                         seqs = substr(paste(aligned_seqs),11,29879),
                          Region = gsub("\\_.*", "", aligned_seqs@ranges@NAMES), 
                          Country = gsub(".*\\_(.*)\\_.*\\(.*","\\1",aligned_seqs@ranges@NAMES),
                          stringsAsFactors = FALSE)
 Samples <- aligned_df[ grep("Sample",aligned_df$ID), ] 
 aligned_df <- aligned_df[!(aligned_df$ID %in% Samples$ID),]
-Samples$ID <- gsub("2019-nCoV_MN908947\\|","",Samples$ID)
 
 #Sample Manipulation (Combining samples with identical sequences)
-uniq_samples <- Samples[ !duplicated(Samples[ , 2] ) , ] #Remove duplicate sequences in samples 23->20
+uniq_samples <- Samples[ !duplicated(Samples[ , 2] ) , ] #Remove duplicate sample sequences (Confirm with real # of duplicates)
 DupSampleList <-list()
 for (x in 1:nrow(uniq_samples)) { #Iterate through uniq sequences and group same sequences toegther
   dupSeq <- paste(uniq_samples$seqs[x])
@@ -143,6 +151,7 @@ for (x in 1:length(AncestorList)) {
 }
 
 #-------------------------------------Filtering-----------------------------
+# Choose revelant nodes here (will need to take a look at the tree first to determine which to keep, so skip for now)
 keepDF <- data.frame(ID=c("r_1","r_68","r_69","r_70","r_46","r_39","r_16","r_72","r_53","r_67","r_57","r_3","r_14")) #Relevant ancestral nodes
 samplesIDs <- data.frame(ID=Samples$ID[1:18])
 keepDF <- rbind(samplesIDs,keepDF)
@@ -157,11 +166,11 @@ SampleMt <- data.frame(strsplit(Samples$seqs,""), stringsAsFactors = F)
 colnames(SampleMt) <- Samples$ID
 SampleMt <- data.frame(t(SampleMt),stringsAsFactors = F)
 for (x in 1:ncol(SampleMt)) { #Replace "-" in samples 19,21 with nt copy from Wuhan base 
-  if (paste(SampleMt["Sample_19",x]) == "-") {
-    SampleMt["Sample_19",x] <- SampleMt["Asia_Wuhan_Hubei (Wuhan-Hu-1/2019)",x]
+  if (paste(SampleMt["Sample_19",x]) == "N" || paste(SampleMt["Sample_19",x]) == "-") {
+    SampleMt["Sample_19",x] <- SampleMt[161,x] # Change this number based on position (row number) of root sequence
   }
-  if (paste(SampleMt["Sample_21",x]) == "-") {
-    SampleMt["Sample_21",x] <- SampleMt["Asia_Wuhan_Hubei (Wuhan-Hu-1/2019)",x]
+  if (paste(SampleMt["Sample_21",x]) == "N" || paste(SampleMt["Sample_21",x]) == "-") {
+    SampleMt["Sample_21",x] <- SampleMt[161,x]
   }
 }
 
@@ -186,7 +195,9 @@ ml <- optimize_likelihood(phy_object, dbtree) #Stochastic rearrangement > NNI, -
 bstree <- bootstrap_tree(ml,1000,0.001,"bstree0602") #Bootstrap
 
 #Root
-rooted.tree <- root(bstree, which(bstree$tip.label == "Asia_Wuhan_Hubei (Wuhan-Hu-1/2019)"))
+rooted.tree <- root(bstree, which(bstree$tip.label == "Asia_China_Hubei (Wuhan/WH04/2020)"))
+
+#point david left off
 
 #-------------------------------------Tree Design-----------------------------
 #Regions

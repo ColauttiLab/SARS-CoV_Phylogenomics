@@ -2,13 +2,15 @@ library(tidyr)
 library(dplyr)
 library(ggplot2)
 
-polymorph<-read.csv("intermediatedata/polymorphicAlignment_no1921.csv", stringsAsFactors = F)
+polymorph<-read.csv("intermediatedata/polymorphicAlignment.csv", stringsAsFactors = F)
 colnames(polymorph) <- gsub("X","",colnames(polymorph))
 colnames(polymorph)[1] <- "sample"
-polymorph$sample[30] <- "Wuhan-Hu-1/2019" #Change index number based on which file
+polymorph$sample[160] <- "Wuhan-Hu-1/2019" #Change index number based on which file
+polymorph$sample[161] <- "Wuhan/WH04/2020" #Change index number based on which file
+
 
 for (x in 2:ncol(polymorph)) {
-  refNt <- polymorph[30,x] #Change index number
+  refNt <- polymorph[161,x] #Change index number
   polymorph[which(polymorph[,x] == refNt),x]<-" "
 }
 
@@ -38,7 +40,7 @@ VarPlot<-ggplot(long, aes(x=position, y=sample)) +
 
 VarPlot
 
-pdf(file="outputs/figures/Fig1.pdf",width=8,height=4)
+pdf(file="outputs/fig2.pdf",width=12,height=10)
   VarPlot
 dev.off()
 
