@@ -59,7 +59,7 @@ bootstrap_tree<-function(fitted_model,bs_iterations,scale_bar,out){
 # Align sequences
 aligned_seqs <- readDNAStringSet("./intermediatedata/BRalignment2bp.afa")
 aligned_df <- data.frame(ID = gsub("Sample ", "Sample_", aligned_seqs@ranges@NAMES), 
-                         seqs = substr(paste(aligned_seqs),11,29683),
+                         seqs = paste(aligned_seqs),
                          Region = gsub("\\_.*", "", aligned_seqs@ranges@NAMES), 
                          Country = gsub(".*\\_(.*)\\_.*\\(.*","\\1",aligned_seqs@ranges@NAMES),
                          stringsAsFactors = FALSE)
@@ -169,6 +169,10 @@ for (x in 1:ncol(SampleMt)) { #Replace "-" in samples 19,21 with nt copy from Wu
 polymorphicloci <-SampleMt[,c(names(Filter(function(x) length(unique(x)) != 1, SampleMt)))]
 colnames(polymorphicloci) <- gsub("X","",colnames(polymorphicloci))
 write.csv(polymorphicloci,"polymorphicAlignment.csv")
+
+#Might want to trim ends here
+#View(polymorphicloci)
+#example: polymorphicloci <- polymorphicloci[,6:(ncol(polymorphicloci)-15)]
 
 #Tree prep
 polychars<-apply(format(polymorphicloci), 1, paste, collapse="")
