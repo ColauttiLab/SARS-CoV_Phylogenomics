@@ -1,2 +1,3 @@
 #!/bin/bash
-mafft --auto --thread -1 --keeplength --addfragments 2bpWuhanAlignment.fasta s1921.fasta > 06022020alignment.fasta
+cp ./intermediatedata/BRalignment2bp.afa ./intermediatedata/BRalignment2bp.afa.bkp
+mafft --auto --thread -1 --keeplength --addfragments ./intermediatedata/BRalignment2bp.afa ./inputdata/NewSeqs.fasta > ./intermediatedata/BRalignment2bp.afa

@@ -1,3 +1,6 @@
+library(ape)
+library(Biostrings)
+
 #Functions
 
 optimize_db_parsimony<-function(phy_object) {

@@ -1,5 +1,5 @@
 #!/bin/bash
-FILE="./outputs/seqs.txt"
+FILE="./intermediatedata/seqs.txt"
 if [ ! -f "$FILE" ]
 then
     touch $FILE
@@ -10,6 +10,6 @@ fi
 
 while read -r CURRENT_LINE
     do
-        /usr/local/ncbi/blast/bin/blastdbcmd -db ./intermediatedata/nextstrain_sequences/nextstrainDB -entry $CURRENT_LINE | tee -a ./outputs/seqs.txt
+        /usr/local/ncbi/blast/bin/blastdbcmd -db ./intermediatedata/nextstrain_sequences/nextstrainDB -entry $CURRENT_LINE | tee -a ./intermediatedata/seqs.txt
         ((LINE++))
-done < "./outputs/GBACC.txt"
+done < "./intermediatedata/GBACC.txt"
