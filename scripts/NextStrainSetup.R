@@ -38,7 +38,7 @@ seqDF <- data.frame(Seqs = paste(samples), ID = gsub('2019-nCoV_MN908947\\|','',
 
 #blast each sequence to local database
 datalist = list()
-for (i in 1:1) {
+for (i in 1:row(seqDF)) {
   temp <- DNAStringSet(paste(seqDF[i,]$Seqs))
   blast_results <-blast_seq(temp, nextstrain_db, mismatches = 2)
   blast_results$Sample<-seqDF[i,]$ID
