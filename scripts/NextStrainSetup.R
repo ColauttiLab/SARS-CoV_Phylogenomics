@@ -6,9 +6,7 @@ library(rBLAST)
 library(plyr)
 
 #------------------------- User-defined parameters --------------------------
-
-MisMatch<-2 # N
-
+MisMatch<-3 # Database genomes with more than this number of mismatches from patient samples are excluded from analysis
 #--------------------------
 
 #-------------------------------------Functions-------------------------------------
