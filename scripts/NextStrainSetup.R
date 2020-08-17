@@ -21,9 +21,9 @@ blast_seq<-function(refseq ,blastDB, mismatches, hits = NA){
 } #Perform blast search and return dataframe of blast hits that meet criteria
 
 retrieve_seqs <- function(dataframe, dbpath) {
-  write.table(dataframe$SubjectID, file = "./intermediate/GBACC.txt", row.names = F, col.names = F, quote = F)
+  write.table(dataframe$SubjectID, file = "./intermediatedata/GBACC.txt", row.names = F, col.names = F, quote = F)
   system('./scripts/retrieveSeq.sh')
-  Seqs <- readDNAStringSet("./intermediate/seqs.txt")
+  Seqs <- readDNAStringSet("./intermediatedata/seqs.txt")
   seqDF <- data.frame(SubjectID = paste(Seqs@ranges@NAMES), Seqs = paste(Seqs), stringsAsFactors = FALSE)
   return(seqDF)
 } #Interacts with shell script to return blast result sequences
@@ -64,7 +64,7 @@ blast_results$Seqs <- substr(blast_results$Seqs, blast_results$S.start, (blast_r
 
 # Add Wuhan Samples
 nextstrain_samples <- readDNAStringSet("./inputdata/nextstrain_sequences.fasta")
-wuhan_samples <- nextstrain_samples[ grep("Wuhan", nextstrain_samples@ranges@NAMES) ]
+wuhan_samples <- nextstrain_samples[ grep("Wuhan.WH04.2020|Wuhan.Hu-1.2019", nextstrain_samples@ranges@NAMES) ]
 wuhan_df <- data.frame(SubjectID=paste(wuhan_samples@ranges@NAMES), Seqs=paste(wuhan_samples))
 blast_results <- rbind.fill(blast_results,wuhan_df)
 
