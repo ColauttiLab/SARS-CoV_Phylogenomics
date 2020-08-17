@@ -62,6 +62,10 @@ bootstrap_tree<-function(fitted_model,bs_iterations,scale_bar,out){
 alignment <- read.dna("intermediatedata/BRalignment2bp.afa", "fasta")
 #checkAlignment(test, plot = FALSE)
 trimmed_alignment <- trimEnds(alignment, min.n.seq = 100) # Variable to play with (see documentation). This affects # of objs in uniq_samples by trimming
+# So for min.n.seq = 100, the function will cut the sequences at the position where 100 sequences have unambigiuos bases, and it will fill sequences that fall short with N's
+# So a greater min.n.seq = less filling in with N's. 
+# Notice how changing min.n.seq will change max(aligned_seqs@ranges@width)
+# if min.n.seq = the number of sequences, then the function will cut the at the spot where there is a single unambigious base (too strict).
 #checkAlignment(test, plot = FALSE)
 aligned_seqs <- trimmed_alignment %>% as.list %>% as.character %>% lapply(.,paste0,collapse="") %>% unlist %>% DNAStringSet
 
