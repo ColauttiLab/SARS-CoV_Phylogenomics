@@ -25,4 +25,5 @@ https://www.biorxiv.org/content/10.1101/2020.06.25.171744v1
   - [ ] Add pangolin lineage names to phylogeny (A, B, B1, B1.5, etc.)
 - [ ] Add link to data archive
 - [ ] Add citation to paper
+- [ ] (optional) find more elegant solution for write.fasta() at the end of scripts/NextStrainSetup.R
   

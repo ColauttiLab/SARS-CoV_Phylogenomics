@@ -57,7 +57,7 @@ bootstrap_tree<-function(fitted_model,bs_iterations,scale_bar,out){
 } #Bootstrap
 
 # Align sequences
-aligned_seqs <- readDNAStringSet("./intermediatedata/06022020alignment.fasta")
+aligned_seqs <- readDNAStringSet("./intermediatedata/BRalignment2bp.afa")
 aligned_df <- data.frame(ID = gsub("Sample ", "Sample_", aligned_seqs@ranges@NAMES), 
                          seqs = substr(paste(aligned_seqs),11,29683),
                          Region = gsub("\\_.*", "", aligned_seqs@ranges@NAMES), 
@@ -67,7 +67,7 @@ Samples <- aligned_df[ grep("Sample",aligned_df$ID), ]
 aligned_df <- aligned_df[!(aligned_df$ID %in% Samples$ID),]
 Samples$ID <- gsub("2019-nCoV_MN908947\\|","",Samples$ID)
 
-#Sample Manipulation (Combing same sequece samples)
+#Sample Manipulation (Combining samples with identical sequences)
 uniq_samples <- Samples[ !duplicated(Samples[ , 2] ) , ] #Remove duplicate sequences in samples 23->20
 DupSampleList <-list()
 for (x in 1:nrow(uniq_samples)) { #Iterate through uniq sequences and group same sequences toegther
