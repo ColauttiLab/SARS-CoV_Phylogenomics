@@ -80,7 +80,14 @@ nextstrain_final$ID <-paste0(nextstrain_final$region, "_", nextstrain_final$coun
 finalDF<-rbind.fill(nextstrain_final,seqDF) #Add target DF to main DF
 
 #To Fasta
-seqinr::write.fasta(paste(finalDF$Seqs), paste0(finalDF$ID), "./intermediatedata/nextstrain_br.fasta")
+seqinr::write.fasta(sequences=finalDF$Seqs[1],names=paste(finalDF$ID[1]),
+                    file.out="./intermediatedata/nextstrain_br.fasta",as.string=T)
+for(i in 2:nrow(finalDF)){
+  seqinr::write.fasta(sequences=finalDF$Seqs[i],names=paste(finalDF$ID[i]),
+                      file.out="./intermediatedata/nextstrain_br.fasta",as.string=T,
+                      open="a")
+}
+
 
 #Align using MAFFT:
 # % mafft --auto input > output
