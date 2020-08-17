@@ -5,6 +5,12 @@ library(dplyr)
 library(rBLAST) 
 library(plyr)
 
+#------------------------- User-defined parameters --------------------------
+
+MisMatch<-2 # N
+
+#--------------------------
+
 #-------------------------------------Functions-------------------------------------
 ##From phyloBlast package (WIP)
 blast_seq<-function(refseq ,blastDB, mismatches, hits = NA){
@@ -38,12 +44,13 @@ seqDF <- data.frame(Seqs = paste(samples), ID = gsub('2019-nCoV_MN908947\\|','',
 
 #blast each sequence to local database
 datalist = list()
-for (i in 1:row(seqDF)) {
+for (i in 1:nrow(seqDF)) {
   temp <- DNAStringSet(paste(seqDF[i,]$Seqs))
-  blast_results <-blast_seq(temp, nextstrain_db, mismatches = 2)
-  blast_results$Sample<-seqDF[i,]$ID
-  blast_results$Qlen <- nchar(paste(seqDF[i,]$Seqs)) # Length of query sequence
-  datalist[[i]] <- blast_results[2:nrow(blast_results),] # Remove top hit (QGOL seqs already uploaded)
+  tmp_blast_results <-blast_seq(temp, nextstrain_db, mismatches = MisMatch)
+  tmp_blast_results$Sample<-seqDF[i,]$ID
+  tmp_blast_results$Qlen <- nchar(paste(seqDF[i,]$Seqs)) # Length of query sequence
+  datalist[[i]] <- tmp_blast_results[2:nrow(blast_results),] # Remove top hit (QGOL seqs already uploaded)
+  temp<-tmp_blast_results<-NA
 }
 
 #Transform list into dataframe
