@@ -1,7 +1,9 @@
+.gitignore
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
+*.Rproj
 README.html
 inputdata
 intermediatedata
