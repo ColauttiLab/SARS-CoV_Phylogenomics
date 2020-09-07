@@ -7,27 +7,22 @@ Trim3<-30420 # End position from 3' (bp after this number are deleted); NA 0 for
 #------------------------------------------------------------------------------
 
 #Load data (see mafft.sh for details on how these files were created)
-alignment <- readDNAStringSet("./intermediatedata/BRaligned.afa") # Alignment from Nextstrain (msa)
+## aligned sequences
+alignIn <- readDNAStringSet("./intermediatedata/BRaligned.afa") # Alignment from Nextstrain (msa)
+## Distance calculations
 dif_mat <- read.csv("./intermediatedata/DistMat.csv",row.names=1)
 names(dif_mat)<-c("Sample","Ref","Dist")
-
-# Import PANGOLIN lineages
+## PANGOLIN lineages
 PangoLins<-read.csv("./inputdata/PangoLins.csv")
 
-# Convert User-defined trim to sequence index
-if(Trim5 %in% c(NA,0)) {
-  Trim5<-1
-}
-
-if(Trim3 %in% c(NA,0)) {
-  x<-lengths(alignment)
-  Trim3<-max(x)
-} 
+# remove misaligned
+x<-lengths(alignIn)
+alignment<-alignIn[x==max(x)]
+x<-NULL
 
 # Simplify distance matrix data
-## 1. Filter dissimilar (pt 1)
-## Preliminary filter; smaller number speeds up code but may lose relevant sequences see below for final filter with MisMatch variable
-keep<-dif_mat$Ref[dif_mat$Dist <= 20] 
+## 1. Filter dissimilar
+keep<-dif_mat$Ref[dif_mat$Dist <= MisMatch] 
 ## 2. Remove patient samples already uploaded to GISAID ('QGLO')
 keep<-keep[grep("QGLO",keep,invert=T)]
 ## 3. Add Wuhan basal (root of phylogeny)

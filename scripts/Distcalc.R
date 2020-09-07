@@ -4,7 +4,9 @@ library(foreach)
 library(doParallel)
 
 #------------------------- User-defined parameters --------------------------
-Csave<-4 # Number of cores to keep open, to use for other tasks (>=1 for personal computer, 0 for cluster)
+Csave<-1 # Number of cores to keep open, to use for other tasks;  Csave < 1 creates error
+Trim5<-360 # Start position from 5' (bp before this number are deleted); NA or 0 for no trim
+Trim3<-30420 # End position from 3' (bp after this number are deleted); NA 0 for no trim
 #------------------------------------------------------------------------------
 
 #Load data
@@ -15,6 +17,10 @@ x<-lengths(alignIn)
 alignIn<-alignIn[x==max(x)]
 x<-NULL
 
+## Trim ends
+alignIn <- subseq(alignIn, start = Trim5, end = Trim3)
+
+# Setup objects for loop
 DistMat<-NULL
 iQGLO<-grep("QGLO",names(alignIn))
 iSamples<-grep("Sample.*",names(alignIn))
@@ -24,7 +30,7 @@ iRefs<-grep(".*",names(alignIn[-c(iSamples,iQGLO)]))
 Clusters<-makeCluster(detectCores()[1]-Csave)
 registerDoParallel(Clusters)
 
-# Parallel for loop for calculating substitutions
+# Parallel for-loop to calculate substitutions
 DistMat<-foreach(r=1:length(iRefs), .combine=rbind) %dopar% {
   library(ape) # Must be loaded locally in each thread in order for dist.dna to work
   #Load data

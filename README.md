@@ -22,6 +22,7 @@
 - [ ] Add link to data archive when published
 - [ ] Add citation to paper when published
 - [ ] Check for, and remove, unused libraries in R scripts
+- [X] Move Trim5 and Trim3 to Distcalc.R instead of NextStrainFilter.R
 - [X] Add updated Wuhan root: Wuhan/WH04/2020 (include 2019 for comparison)
 - [X] Reorganize code: 
   - [X] mafftalign.sh -- reproducible alignment with defined inputs/outputs
