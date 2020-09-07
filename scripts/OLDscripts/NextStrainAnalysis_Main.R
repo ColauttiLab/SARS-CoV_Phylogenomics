@@ -2,6 +2,8 @@ library(phangorn)
 library(Biostrings)
 library(ips)
 library(magrittr)
+library(dplyr)
+library(ggtree)
 
 #Functions
 
@@ -59,7 +61,7 @@ bootstrap_tree<-function(fitted_model,bs_iterations,scale_bar,out){
 } #Bootstrap
 
 # Trim alignment
-alignment <- read.dna("intermediatedata/BRalignment2bp.afa", "fasta")
+alignment <- read.dna("intermediatedata/BRalignment3bp.afa", "fasta")
 #checkAlignment(test, plot = FALSE)
 trimmed_alignment <- trimEnds(alignment, min.n.seq = 100) # Variable to play with (see documentation). This affects # of objs in uniq_samples by trimming
 # So for min.n.seq = 100, the function will cut the sequences at the position where 100 sequences have unambigiuos bases, and it will fill sequences that fall short with N's
@@ -82,7 +84,7 @@ aligned_df <- aligned_df[!(aligned_df$ID %in% Samples$ID),]
 #Sample Manipulation (Combining samples with identical sequences)
 uniq_samples <- Samples[ !duplicated(Samples[ , 2] ) , ] #Remove duplicate sample sequences (Confirm with real # of duplicates)
 DupSampleList <-list()
-for (x in 1:nrow(uniq_samples)) { #Iterate through uniq sequences and group same sequences toegther
+for (x in 1:nrow(uniq_samples)) { #Iterate through unique sequences and group identical sequences together
   dupSeq <- paste(uniq_samples$seqs[x])
   matches <- Samples[ which(paste(Samples$seqs)==dupSeq), ]
   if (nrow(matches)>1) {
@@ -96,30 +98,6 @@ for (x in 1:nrow(uniq_samples)) { #Iterate through uniq sequences and group same
 }
 DupSampleList<-DupSampleList[lengths(DupSampleList) != 0]
 Samples <- dplyr::bind_rows(DupSampleList)
-
-
-#-------------------------------------Error Correcting-----------------------------
-# Might be OUTDATED.
-ErrorDF <- aligned_df[grep("Denmark/ALAB-SSI-1272|Denmark/ALAB-SSI-246|Denmark/ALAB-SSI-660|Denmark/ALAB-SSI-662|England/CAMB-71BDC|England/CAMB-71DE5|England/CAMB-738E2|England/CAMB-73DC5|England/CAMB-74465|England/CAMB-789F9|England/CAMB-79AF5", aligned_df$ID),]
-ErrorList <- list()
-for (x in 1:nrow(ErrorDF)) {
-  ErrorList[[x]] <- gregexpr("N|K",paste(ErrorDF$seqs[x])) 
-}
-#1:5
-substr(paste(aligned_df$seqs[669]),19405,19405) #N->C Europe_46
-ErrorDF$seqs[1:5] <- gsub("N","C",paste(ErrorDF$seqs[1:5]))
-
-#6:7
-substr(paste(aligned_df$seqs[669]),25123,25123) #K->T Europe_47
-ErrorDF$seqs[6:7] <- gsub("K","T",paste(ErrorDF$seqs[6:7]))
-
-#8:11
-substr(paste(aligned_df$seqs[1064]),10995,10995) #N->C Europe_63
-ErrorDF$seqs[8:11] <- gsub("N","C",paste(ErrorDF$seqs[8:11]))
-
-#Remove and Readd
-aligned_df<-aligned_df[!(aligned_df$ID %in% ErrorDF$ID),]
-aligned_df<-rbind(aligned_df, ErrorDF)
 
 #-------------------------------------Sorting into reference samples-----------------------------
 uniq_seqs <- aligned_df[ !duplicated(aligned_df[ , 2] ) , ] #Remove duplicate sequences
@@ -154,15 +132,8 @@ for (x in 1:length(AncestorList)) {
   }
 }
 
-#-------------------------------------Filtering-----------------------------
-# Choose revelant nodes here (will need to take a look at the tree first to determine which to keep, so skip for now)
-keepDF <- data.frame(ID=c("r_1","r_68","r_69","r_70","r_46","r_39","r_16","r_72","r_53","r_67","r_57","r_3","r_14")) #Relevant ancestral nodes
-samplesIDs <- data.frame(ID=Samples$ID[1:18])
-keepDF <- rbind(samplesIDs,keepDF)
-Samples <- merge(keepDF, Samples, by.y="ID")
-
 #Add root
-rootdf <- aligned_df[grep("Wuhan", aligned_df$ID),]
+rootdf <- aligned_df[grep("Wuhan.*2020", aligned_df$ID),]
 Samples <- rbind(Samples, rootdf)
 
 #Convert to dna matrix
@@ -181,7 +152,7 @@ for (x in 1:ncol(SampleMt)) { #Replace "-" in samples 19,21 with nt copy from Wu
 #Remove monomorphic sites
 polymorphicloci <-SampleMt[,c(names(Filter(function(x) length(unique(x)) != 1, SampleMt)))]
 colnames(polymorphicloci) <- gsub("X","",colnames(polymorphicloci))
-write.csv(polymorphicloci,"polymorphicAlignment.csv")
+write.csv(polymorphicloci,"./intermediatedata/polymorphicAlignment.csv")
 
 #Might want to trim ends here
 #View(polymorphicloci)
@@ -196,11 +167,13 @@ phy_object<-phyDat(dna_bin, type = "DNA")
 #Trees
 dbtree <- optimize_db_parsimony(phy_object) #Distance based tree
 ml <- optimize_likelihood(phy_object, dbtree) #Stochastic rearrangement > NNI, -787 -> -779 logLik #Model:GTR+I
-bstree <- bootstrap_tree(ml,1000,0.001,"bstree0602") #Bootstrap
+bstree <- bootstrap_tree(ml,1000,0.001,"./intermediatedata/BSTree") #Bootstrap
 
 #Root
-rooted.tree <- root(bstree, which(bstree$tip.label == "Asia_China_Hubei (Wuhan/WH04/2020)"))
+rooted.tree <- root(bstree, which(bstree$tip.label == "Wuhan/WH04/2020"))
 
+#Save Tree
+write.tree(rooted.tree,"./intermediatedata/BaseTree.tree",tree.names=T)
 #point david left off
 
 #-------------------------------------Tree Design-----------------------------
@@ -234,9 +207,9 @@ fullplot<-ggtree(WtDTcol,layout='rectangular',alpha=0.5,linetype=1,size=0.1) +
   geom_nodelab(hjust=-0.2,size=2) +
   geom_treescale(x = 0.003, y = 30, fontsize = 2, linesize = 0.1) +
   
-  geom_hilight(node=34, fill=CC[1], extendto=0.0004) +
-  geom_hilight(node=54, fill=CC[2], extendto=0.0004) +
-  geom_hilight(node=37, fill=CC[3], extendto=0.0004) +
+  #geom_hilight(node=34, fill=CC[1], extendto=0.0004) +
+  #geom_hilight(node=54, fill=CC[2], extendto=0.0004) +
+  #geom_hilight(node=37, fill=CC[3], extendto=0.0004) +
   
   geom_tippoint(aes(colour=group),size=1,shape=19) +
   
@@ -246,11 +219,8 @@ fullplot<-ggtree(WtDTcol,layout='rectangular',alpha=0.5,linetype=1,size=0.1) +
   
   theme_tree(legend.position='right') 
 
-#Truncate sample 19,21 branches 
-fullplot$data[fullplot$data$node %in% c(19,21), "x"] = mean(fullplot$data$x)
-
 #Save
-pdf(file="testtest.pdf", width=9, height=7)
-fullplot + geom_tiplab(aes(colour=group),size=3, hjust=0, align=T, linetype=3, linesize=0.5) #dont forget ab tiplab2
+pdf(file="outputs/figures/Fig2.pdf", width=12, height=12)
+  fullplot + geom_tiplab(aes(colour=group),size=3, hjust=0, align=T, linetype=3, linesize=0.5) #dont forget ab tiplab2
 dev.off()
 

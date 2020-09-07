@@ -1,29 +1,44 @@
-# COVID Analysis Pipeline
+# Colautti Lab / Q-GLO 
 
-Analysis Files from 2020 COV-19 genome study by Sjaarda et al:
-"Chasing the origin of SARS-CoV-2 in Canada’s COVID-19 cases: A genomics study"
-https://www.biorxiv.org/content/10.1101/2020.06.25.171744v1
+## SARS-COV-19 Analysis Pipeline
 
-# scripts Overview
+#### Analysis Files from 2020 COV-19 genome study by *Sjaarda et al*: **"Phylogenomics reveals viral evolution, sources, transmission, and superinfection in early-stage COVID-19 patients in Eastern Ontario, Canada"** https://www.biorxiv.org/content/10.1101/2020.06.25.171744v1
 
-1. Download latest nextstrain squence data from GISAID (https://www.gisaid.org)
-  * OR to reproduce the published analysis, download the archived sequence data from <<LINK>>
-2. Run makeBlastDB.sh to create a local fasta database for the nextseq sequences (this will take a while)
-3. Run NextStrainSetup.R to BLAST reference files to nextstrain sequences and subset analysis
-4. Run mafftalign.sh to create an alignment of the full set of sequences
+# Pipeline Overview
 
-## Instructions
-1. You may need to change your local path in scripts/retrieveSeq.sh to point to blast (especially if you aren't using a Mac) 
+![*Analysis Pipeline*](Pipeline.png)
+
+1. Download the patient genomes from <<DATADRYAD LINK>> and the latest nextstrain squence data from GISAID (https://www.gisaid.org)
+    * OR to reproduce the published analysis, download the archived sequence data from <<DATADRYAD LINK>>
+2. Run *mafftalign.sh* to align patient samples to GISAID aligned genomes
+3. Run *VariantFilter.R* and *VariantMap.R* to remove monomorphic loci and create Variant map from consensus genomes
+    * (optional) 3b. Run VariantMapNextStrain.R to identify trim sites (e.g. junk polymorphisms on 3' and 5' ends); these can be removed using the **Trim5** and **Trim3** user-defined parameters in *NextStrainFilter.R*
+4. Run *Distcalc.R* to count N substitutions for each patient sample against each reference genome in the GISAID database
+5. Run *NextStrainFilter.R* to remove 'clutter' (phylogenetically uninformative reference sequences and monomorphic sites) and group identical genomes shared by multiple reference IDs
+6. Run *NexTree.R* to produce phylogeny
 
 ## TO DO:
 
-- [ ] Add all Wuhan strains
-- [ ] Use updated Wuhan root: Wuhan/WH04/2020
-- [ ] check/clean up libraries in NextStrainSetup.R & NextStrainAnalysis_Main.R
-- [X] retrieveSeq.sh -- replace directories with generic names
-- [ ] Add code for phylogeny
-  - [ ] Add pangolin lineage names to phylogeny (A, B, B1, B1.5, etc.)
-- [ ] Add link to data archive
-- [ ] Add citation to paper
-- [ ] (optional) find more elegant solution for write.fasta() at the end of scripts/NextStrainSetup.R
+- [ ] Add link to data archive when published
+- [ ] Add citation to paper when published
+- [ ] Check for, and remove, unused libraries in R scripts
+- [X] Add updated Wuhan root: Wuhan/WH04/2020 (include 2019 for comparison)
+- [X] Reorganize code: 
+  - [X] mafftalign.sh -- reproducible alignment with defined inputs/outputs
+  - [X] VariantFilter.R -- remove monomorphic loci from reference alignment
+  - [X] VariantMap.R -- create variant map (figure)
+  - [X] Discalc.R -- replace NextStrainSet.R; Instead of blast, conduct a pairwise comparison of each patient sample with each GISAID genome.
+  - [X] NextstrainFilter.R -- filter sequences based on DiscCalc.R and remove monomorphic loci
+  - [X] VariantMapNextStrain.R -- optional script to look for trim sites to use in NextStrainFilter.R
+  - [X] NexTree.R -- phylogeny figure  
+- [X] Add pangolin lineage names to phylogeny (A, B, B1, B1.5, etc.) in NextstrainFilter.R
+- [X] (optional) find more elegant solution for write.fasta() at the end of scripts/NextStrainSetup.R
+- [X] Replace BLAST filter with full-genome, pairwise comparison
+
+### Older edits
+- [X] Move code from line 50 in NextStrainSetup.R to downstream (remove QGLO sequences from GISAID database). This will improve reproducibility for future runs of samples that are not already in the GISAID database.
+- [X] Speed up workflow by aligning patient sequences (mafftaligh.sh) AND combining redundant sequences (DupSampleList in NextStrainAnalysis_.R) BEFORE running the BLAST to identify reference sequences.
+- [X] fix blast_seq function in NextStrainSetup.R to retain more hits (currently missing important sequences)
+- [X] improve efficiency in NextStrainSetup.R by modifying blast_seq function to only retain non-redundant hits (rather than saving all to memory, transforming to df f_blast_results and then removing redundant uniq_blast_results)
+- [X] retain only closely-related sequences, based on BLAST analysis in NextStrainSetup.R
   

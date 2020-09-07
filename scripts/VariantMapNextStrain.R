@@ -2,7 +2,7 @@ library(tidyr)
 library(dplyr)
 library(ggplot2)
 
-polymorph<-read.csv("./intermediatedata/PolyAlignRef.csv", stringsAsFactors = F)
+polymorph<-read.csv("./intermediatedata/PolymorphicAlignmentSimple.csv", stringsAsFactors = F)
 colnames(polymorph) <- gsub("X","",colnames(polymorph))
 colnames(polymorph)[1] <- "sample"
 ##OLD## polymorph$sample[grep("Wuhan.*2019",polymorph$sample)] <- "Wuhan-Hu-1/2019" #Change index number based on which file
@@ -42,7 +42,7 @@ VarPlot<-ggplot(long, aes(x=position, y=sample)) +
   theme_classic() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-pdf(file="./outputs/figures/fig1Pos.pdf",width=12,height=10)
+pdf(file="./outputs/NextStrainVarPos.pdf",width=12,height=10)
   VarPlot
 dev.off()
 
@@ -59,6 +59,6 @@ VarPlotScale<-ggplot(clong, aes(x=position, y=sample),  fill=substitution) +
   theme_classic() +
   theme(axis.text.x = element_text(size=8))
 
-pdf(file="./outputs/figures/fig1Scale.pdf",width=12,height=10)
+pdf(file="./outputs/NextStrainVarScal.pdf",width=12,height=10)
  VarPlotScale
 dev.off()
