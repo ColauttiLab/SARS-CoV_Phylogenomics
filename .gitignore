@@ -3,7 +3,8 @@
 .RData
 .Ruserdata
 README.html
-inputdata/
-intermediatedata/
-outputs/
+inputdata
+intermediatedata
+outputs
+scripts/OLDscripts
 *.pptx
