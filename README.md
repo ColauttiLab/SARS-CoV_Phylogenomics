@@ -1,6 +1,4 @@
-# Colautti Lab / Q-GLO 
-
-## SARS-COV-19 Analysis Pipeline
+# SARS-COV-19 Analysis Pipeline
 
 #### Analysis Files from 2020 COV-19 genome study by *Sjaarda et al*: **"Phylogenomics reveals viral evolution, sources, transmission, and superinfection in early-stage COVID-19 patients in Eastern Ontario, Canada"** https://www.biorxiv.org/content/10.1101/2020.06.25.171744v1
 
