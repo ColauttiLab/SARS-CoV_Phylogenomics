@@ -1,9 +1,10 @@
 library(Biostrings)
 
 #------------------------- User-defined parameters --------------------------
-MisMatch<-5 # Genomes with more than this number of substitutions vs patient samples are removed
+MisMatch<-1 # Genomes with more than this number of substitutions vs patient samples are removed
 Trim5<-360 # Start position from 5' (bp before this number are deleted); NA or 0 for no trim
 Trim3<-30420 # End position from 3' (bp after this number are deleted); NA 0 for no trim
+## IMPORTANT: Trim5 and Trim3 here should match Distcalc.R
 #------------------------------------------------------------------------------
 
 #Load data (see mafft.sh for details on how these files were created)
@@ -51,13 +52,17 @@ for(i in 1:nrow(PangoLins)){
   aligned_df$ID[grep(PangoLins$GISAID.ID[i],aligned_df$ID)]<-PangoLins$lineage[i]
 }
 # Add Wuhan if missing (e.g. renamed to PANGOLIN lineage A)
+if(length(grep("Wuhan.WH04.2020",aligned_df$ID)) == 0 ){
+  Wuhan<-aligned_df[aligned_df$ID == "A.1",]
+  Wuhan$ID<-"Wuhan/WH04/2020"
+  aligned_df<-rbind(aligned_df,Wuhan)
+}
 
 # Simplify IDs
 aligned_df$ID<-gsub("^2019-nCoV.*(S[0-9]{1,2})$","\\1i",aligned_df$ID) # IonTorrent
 aligned_df$ID<-gsub("^(S[0-9]{1,2})_NB.*nanopolish.*","\\1m",aligned_df$ID) # MinION
 aligned_df$ID<-gsub("^hCoV-19.([A-z ]+).*EPI_ISL_([0-9]+).*","\\1.\\2",aligned_df$ID) # Reference Sequences
 aligned_df$ID<-gsub("^S([0-9]){1}([im])$","S0\\1\\2",aligned_df$ID)# add leading 0s
-aligned_df$ID[grep("Wuhan.406801",aligned_df$ID)] <- "Wuhan/WH04/2020" # Wuhan (root)
 
 #Convert to dna matrix
 FullMt <- data.frame(strsplit(aligned_df$seqs,""), stringsAsFactors = F)
@@ -67,17 +72,21 @@ FullMt <- data.frame(t(FullMt),stringsAsFactors = F)
 #Convert patient samples only (for variant graph)
 SimpleMt <- FullMt[grep("^S[0-9]+[im]$|Wuhan.WH04.2020",row.names(FullMt)),]
 
-#Remove monomorphic sites and write to file:
-# sequences from NextSeq msa 
-polymorphicloci <-FullMt[,c(names(Filter(function(x) sum(unique(x) %in% c("A","T","G","C")) > 1, FullMt)))]
+# Identify Remove monomorphic sites (of patient samples relative to Wuhan reference) =
+keepLoci<-c(names(Filter(function(x) sum(unique(x) %in% c("A","T","G","C")) > 1, SimpleMt)))
+
+# Remove monomorphic sites and write to file
+## Write polymorphic loci including only patient samples (excluding reference sequences)
+## sequences from NextSeq msa, excluding reference samples (input for VariantMap.R)
+polySamp <- SimpleMt[,keepLoci]
+colnames(polySamp) <- gsub("X","",colnames(polySamp))
+write.csv(polySamp,"./intermediatedata/PolymorphicAlignmentSimple.csv")
+
+## sequences from NextSeq msa 
+polymorphicloci <-FullMt[,keepLoci]
 colnames(polymorphicloci) <- gsub("X","",colnames(polymorphicloci))
 write.csv(polymorphicloci,"./intermediatedata/PolymorphicAlignmentFull.csv")
 
-# Write polymorphic loci including only patient samples (excluding reference sequences)
-# sequences from NextSeq msa, excluding reference samples (input for VariantMap.R)
-polySamp <- SimpleMt[,c(names(Filter(function(x) sum(unique(x) %in% c("A","T","G","C")) > 1, SimpleMt)))]
-colnames(polySamp) <- gsub("X","",colnames(polySamp))
-write.csv(polySamp,"./intermediatedata/PolymorphicAlignmentSimple.csv")
 
 # Write to Fasta
 # NextSeq aligned
