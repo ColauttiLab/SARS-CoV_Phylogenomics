@@ -15,11 +15,14 @@
 5. Run *NextStrainFilter.R* to remove 'clutter' (phylogenetically uninformative reference sequences and monomorphic sites) and group identical genomes shared by multiple reference IDs
 6. Run *NexTree.R* to produce phylogeny
 
-## TO DO:
+NOTES:  
+  * Make sure user-defined Trim5 and Trim3 variables in Distcalc.R are same values as NextStrainFilter.R
 
+## Current/recent Edits:
 - [ ] Add link to data archive when published
 - [ ] Add citation to paper when published
 - [ ] Check for, and remove, unused libraries in R scripts
+- [X] Combine identical reference sequences in NextTree.R
 - [X] Move Trim5 and Trim3 to Distcalc.R instead of NextStrainFilter.R
 - [X] Add updated Wuhan root: Wuhan/WH04/2020 (include 2019 for comparison)
 - [X] Reorganize code: 
@@ -33,6 +36,11 @@
 - [X] Add pangolin lineage names to phylogeny (A, B, B1, B1.5, etc.) in NextstrainFilter.R
 - [X] (optional) find more elegant solution for write.fasta() at the end of scripts/NextStrainSetup.R
 - [X] Replace BLAST filter with full-genome, pairwise comparison
+
+### Future Plans
+- [ ] Future projects: New pipeline similar to Distcalc.R + NextTree.R code but directly from .vcf? 
+- [ ] Split NexTree.R into 2 scripts: 1. NexFilt2.R to filter based on polymorphisms shared with patient samples; 2. NexTree.R to estimate Phylogeny & graph
+  - [ ] From NexFilt2.R save accession ID and write new script to include all polymorphisms including those in reference sequences that are not in patient samples
 
 ### Older edits
 - [X] Move code from line 50 in NextStrainSetup.R to downstream (remove QGLO sequences from GISAID database). This will improve reproducibility for future runs of samples that are not already in the GISAID database.
