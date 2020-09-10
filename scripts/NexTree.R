@@ -7,6 +7,7 @@ library(ggtree)
 Iters<-1#0000 # Bootstrap iterations (set low (10 or 100) for quick tree; 10000 for final published tree)
 Scale<-0.001 # Scale bar to use on phylogeny
 RemoveR<-NA # Refere
+CombSamp<-T # If T, combine identical patient sequences in phylogeny
 Comb<-10 # Used to shorten reference sequence table; Regions with < Comb are combined into 'Other' category
 Exclude<-c("B.6","B.7","B.2","B.5","B.4","B.3","A.4","A.5","A.6","A.3","A.2","B.1.6","B.1.22","B.1.19") # Node names to exclude (run with NA to see full phylogeny)
 #------------------------------------------------------------------------------
@@ -98,17 +99,14 @@ for(i in 1:length(uniq_pat_seqs)){
   BestSeq <- DistMat[Idx,] == min(DistMat[Idx,ref_seqs]) # Keep most similar sequences
   BestSeq <- dnaIn[BestSeq] # Convert to sequences
   BestSeq <- BestSeq[grep("^[A-z ]+\\.[0-9]{6}$",names(BestSeq))] # Remove non-reference sequences
-
-
-  Complete <- rowSums(letterFrequency(BestSeq,c("A","G","C","T")))/rowSums(alphabetFrequency(BestSeq)) # Proportion of non-ambiguous bases
-
+  # Calculate proportion of non-ambiguous bases to find best representative sequence
+  Complete <- rowSums(letterFrequency(BestSeq,c("A","G","C","T")))/rowSums(alphabetFrequency(BestSeq)) 
   # Tally Locations
   SeqTemp<-table(gsub("^([A-z ]+)\\.[0-9]+","\\1",names(BestSeq)))
   SeqTemp<-data.frame(ID=paste0("r",r),
                       Region=names(SeqTemp),
                       N=as.numeric(SeqTemp))
   SeqTable<-rbind(SeqTable,SeqTemp)
-  
   # Check if sequence already exists in keep_seqs; if not, add new reference ID
   if(!BestSeq[Complete == max(Complete)][1] %in% keep_seqs){
     # Save sequence
@@ -145,22 +143,46 @@ SeqTable_short<- rbind(SeqTable[SeqTable$N >= Comb,],
                       SeqTable_short) %>%
   arrange(ID)
 
-
-
 # ---------------- Reference region summary table -----------------
 # Output to table
 write.csv(SeqTable_short,"./outputs/RefSeqs.csv")
 write.csv(SeqTable,"./outputs/RefSeqs_long.csv")
 # ---------------------------------
 
-
-
 # Phylogeny Prep
 ## Sequence setup
-dna_bin <- as.DNAbin(c(dnaIn[c(Wuhan,pat_seqs,pang_seqs)],keep_seqs)) # Combine sequences
+# Combine samples with same sequence (ignoring N)
+if(CombSamp == T){
+  patDist<-dist.dna(as.DNAbin(dnaIn[pat_seqs]),model="N",pairwise.deletion=T)
+  patDistMat<-as.matrix(patDist)
+  pSeqs<-dnaIn[pat_seqs] # Save unique sequences
+  pat_seq_keep<-DNAStringSet(NULL)
+  r<-1
+  for(i in 1:length(pSeqs)){
+    BestSeq<-NA
+    BestSeq <- patDistMat[i,] == 0 # Keep most same sequences
+    BestSeq <- pSeqs[BestSeq] # Convert to sequences
+    # Find same sequences (ignoring ambiguous positions)
+    Complete <- rowSums(letterFrequency(BestSeq,c("A","G","C","T")))/rowSums(alphabetFrequency(BestSeq))
+    # Check if sequence already added; if not, keep
+    if(!BestSeq[Complete == max(Complete)][1] %in% pat_seq_keep){
+      # Add sequence
+      pat_seq_keep<-DNAStringSet(c(pat_seq_keep,BestSeq[Complete == max(Complete)][1]))
+      pat_seq_keep@ranges@NAMES[r]<-paste(names(BestSeq),collapse=",")
+      r<-r+1
+    }
+  }
+  phy_seqs<-DNAStringSet(c(dnaIn[c(Wuhan,pang_seqs)],pat_seq_keep,keep_seqs))
+} else {
+  phy_seqs<-DNAStringSet(c(dnaIn[c(Wuhan,pat_seqs,pang_seqs)],keep_seqs))
+}
+  
+# Convert to binary
+dna_bin <- as.DNAbin(phy_seqs) # Combine sequences
 if(length(Exclude) >0 ){
   dna_bin<-dna_bin[!names(dna_bin) %in% Exclude]
 }
+# Create phylogenetic data object
 phy_object<-phyDat(dna_bin, type = "DNA")
 
 # Trees
@@ -179,7 +201,7 @@ write.tree(rooted.tree,"./intermediatedata/BaseTree.tree",tree.names=T)
 # Prep tree output
 # Define regions (for color-coding)
 #regions<-gsub("Wuhan.*","Wuhan",bstree$tip.label)
-regions<-gsub("^S[0-9]+[im]$","Sample",bstree$tip.label)
+regions<-gsub("^S[0-9]+[im].*","Sample",bstree$tip.label)
 regions<-gsub("r[0-9]+","Reference",regions)
 # Define PANGOLIN lineages
 regions<-gsub("[AB]|^[AB].[0-9].*","PANGOLIN",regions)
@@ -191,9 +213,13 @@ WtDTcol<-groupOTU(rooted.tree,regionGroups)
 CC <- c("#06BCC1","#07004D","#A44A3F","#C1AAC0")
 Pal <- c("#47682C","#119DA4","#D64933","#1F2041") #Group Colours: PANGOLIN,Reference,Sample,Wuhan
 
-#nodetree<- ggtree(WtDTcol,layout="rectangular",alpha=0.3) + geom_text2(aes(label=node), hjust=-.3, size=1) + geom_tippoint(aes(colour=group),size=0.5,shape=19) +geom_tiplab(size=0.3)
+
+nodetree<- ggtree(WtDTcol,layout="rectangular",alpha=0.3) + geom_text2(aes(label=node), hjust=-.3, size=1) + geom_tippoint(aes(colour=group),size=0.5,shape=19) + geom_tiplab(size=0.3)
 #nodetree$data[nodetree$data$node %in% c(19,21), "x"] = mean(nodetree$data$x)
-#nodetree
+pdf(file="outputs/PhloNodes.pdf", width=12, height=8)
+  nodetree
+dev.off()
+
 
 #ggtree
 fullplot<-ggtree(WtDTcol,layout='circular',alpha=0.5,linetype=1,size=0.1) +
