@@ -10,9 +10,9 @@
     * OR to reproduce the published analysis, download the archived sequence data from <<DATADRYAD LINK>>
 2. Run *mafftalign.sh* to align patient samples to GISAID aligned genomes
 3. Run *VariantFilter.R* and *VariantMap.R* to remove monomorphic loci and create Variant map from consensus genomes
-    * (optional) 3b. Run VariantMapNextStrain.R to identify trim sites (e.g. junk polymorphisms on 3' and 5' ends); these can be removed using the **Trim5** and **Trim3** user-defined parameters in *NextStrainFilter.R*
+    * (optional) 3b. Run *NextStrainExamine.R* to identify trim sites (e.g. junk polymorphisms on 3' and 5' ends); these can be removed using the **Trim5** and **Trim3** user-defined parameters in *NextStrainFilter.R* and *Distcalc.R*
 4. Run *Distcalc.R* to count N substitutions for each patient sample against each reference genome in the GISAID database
-5. Run *NextStrainFilter.R* to remove 'clutter' (phylogenetically uninformative reference sequences and monomorphic sites) and group identical genomes shared by multiple reference IDs
+5. Run *NextStrainFilter.R* to add PANGOLIN lineages, remove 'clutter' (phylogenetically uninformative reference sequences and monomorphic sites) and group identical genomes shared by multiple reference IDs
 6. Run *NexTree.R* to produce phylogeny
 
 NOTES:  
@@ -22,6 +22,7 @@ NOTES:
 - [ ] Add link to data archive when published
 - [ ] Add citation to paper when published
 - [ ] Check for, and remove, unused libraries in R scripts
+- [ ] Fix VariantMapNextStrain.R to incorporate Trim5 and Trim3
 - [X] Combine identical reference sequences in NextTree.R
 - [X] Move Trim5 and Trim3 to Distcalc.R instead of NextStrainFilter.R
 - [X] Add updated Wuhan root: Wuhan/WH04/2020 (include 2019 for comparison)
@@ -38,6 +39,7 @@ NOTES:
 - [X] Replace BLAST filter with full-genome, pairwise comparison
 
 ### Future Plans
+- [ ] Parse GISAID genomes by collection date and use to filter potential sources? 
 - [ ] Future projects: New pipeline similar to Distcalc.R + NextTree.R code but directly from .vcf? 
 - [ ] Split NexTree.R into 2 scripts: 1. NexFilt2.R to filter based on polymorphisms shared with patient samples; 2. NexTree.R to estimate Phylogeny & graph
   - [ ] From NexFilt2.R save accession ID and write new script to include all polymorphisms including those in reference sequences that are not in patient samples
