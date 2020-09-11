@@ -10,6 +10,9 @@ RefAlign_df <- data.frame(ID = gsub("Sample[ _]", "S", RefAlign@ranges@NAMES),
                           Country = gsub(".*\\_(.*)\\_.*\\(.*","\\1",RefAlign@ranges@NAMES),
                           stringsAsFactors = FALSE)
 
+# Remove Reference sequences
+RefAlign_df<-RefAlign_df[grep("ref",RefAlign_df$ID,invert=T),]
+
 # Simplify ID names
 RefAlign_df$ID<-gsub("^2019-nCoV.*(S[0-9]{1,2})$","\\1i",RefAlign_df$ID) # IonTorrent
 RefAlign_df$ID<-gsub("^(S[0-9]{1,2})_NB.*nanopolish.*","\\1m",RefAlign_df$ID) # MinION
