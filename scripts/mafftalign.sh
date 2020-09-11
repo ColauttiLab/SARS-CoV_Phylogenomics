@@ -4,7 +4,13 @@ module load gcc/7.3.0
 module load intel/2018.3
 module load mafft/7.397
 
+# Set location of aligned GISAID Nextrain sequences
+Aligned="./inputdata/msa_0911/msa_0911.fasta"
+
 date
+
+# Pull out first sequence from GISAID nextstrain alignment
+head -n 2 $Aligned > ./inputdata/Wuhan.afa
 
 # Align to nextstrain alignment
 mafft --thread -1 --keeplength --add ./inputdata/IonTorrent_consensus.fasta ./inputdata/Wuhan.afa > ./intermediatedata/WuhanI.afa
@@ -20,20 +26,20 @@ grep -n '>' ./intermediatedata/WuhanIM.afa | head -3
 
 echo "Use above to check line of reference"
 
-echo "Cutting at line 518 using sed '1,518d'" # Cuts Wuhan sequence to avoid duplicates in final file
+echo "Cutting at line 517 using sed '1,517d'" # Cuts Wuhan sequence to avoid duplicates in final file
 
-sed '1,518d' ./intermediatedata/WuhanIM.afa > ./intermediatedata/Samples.afa
+sed '1,517d' ./intermediatedata/WuhanIM.afa > ./intermediatedata/Samples.afa
 
-cp ./inputdata/msa_0901/msa_0901.fasta ./intermediatedata/BRaligned.afa
+cp $Aligned ./intermediatedata/BRaligned.afa
 
 cat ./intermediatedata/Samples.afa >> ./intermediatedata/BRaligned.afa # Append aligned to NextStrain
 
 echo "Wuhan cut and Samples appended to ./intermediatedata/BRaligned.afa"
 
-echo "CHECK to make sure 518 is the first line of Sample IDs minus 1"
+echo "CHECK to make sure 517 is the first line of Sample IDs minus 1"
 
 head -1 ./intermediatedata/Samples.afa # Check to make sure Wuhan sequence was properly cut
 
-echo "Check above is Sample ID (head -1 ./intermediate/Samples.afa)"
+echo "Line above should be Sample ID (head -1 ./intermediate/Samples.afa)"
 
 date
