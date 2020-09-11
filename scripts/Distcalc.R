@@ -5,8 +5,8 @@ library(doParallel)
 
 #------------------------- User-defined parameters --------------------------
 Csave<-1 # Number of cores to keep open, to use for other tasks;  Csave < 1 creates error
-Trim5<-360 # Start position from 5' (bp before this number are deleted); NA or 0 for no trim
-Trim3<-30420 # End position from 3' (bp after this number are deleted); NA 0 for no trim
+Trim5<-359 # Start position from 5' (bp before this number are deleted); NA or 0 for no trim
+Trim3<-30478 # End position from 3' (bp after this number are deleted); NA 0 for no trim
 #------------------------------------------------------------------------------
 
 #Load data
@@ -14,7 +14,7 @@ alignIn<-readDNAStringSet("./intermediatedata/BRaligned.afa")
 
 # remove misaligned
 x<-lengths(alignIn)
-alignIn<-alignIn[x==max(x)]
+alignIn<-alignIn[x==30958]
 x<-NULL
 
 ## Trim ends
