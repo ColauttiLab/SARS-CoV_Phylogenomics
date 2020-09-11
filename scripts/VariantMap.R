@@ -5,10 +5,8 @@ library(ggplot2)
 polymorph<-read.csv("./intermediatedata/PolyAlignRef.csv", stringsAsFactors = F)
 colnames(polymorph) <- gsub("X","",colnames(polymorph))
 colnames(polymorph)[1] <- "sample"
-##OLD## polymorph$sample[grep("Wuhan.*2019",polymorph$sample)] <- "Wuhan-Hu-1/2019" #Change index number based on which file
-polymorph$sample[grep("Wuhan.*2020",polymorph$sample)] <- "Wuhan/WH04/2020" #Change index number based on which file
 
-# Create variant map (check agains Wuhan reference to only ID variant sites)
+# Create variant map (check against Wuhan reference to only ID variant sites)
 for (x in 2:ncol(polymorph)) {
   refNt <- polymorph[grep("Wuhan",polymorph$sample),x] #Change index number
   polymorph[which(polymorph[,x] == refNt),x]<-" "
@@ -49,7 +47,7 @@ dev.off()
 clong<-long
 clong$position<-as.numeric(paste(clong$position))
 
-# Variant plot with y-axis scalled to genome
+# Variant plot with y-axis scaled to genome
 VarPlotScale<-ggplot(clong, aes(x=position, y=sample),  fill=substitution) + 
   geom_tile(aes(fill=substitution, width = 100), colour = "white") + 
   scale_fill_manual(name = "Nucleotide", breaks = c('A','G','C','T','other'),values=palette) +
