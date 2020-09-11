@@ -2,8 +2,8 @@ library(Biostrings)
 
 #------------------------- User-defined parameters --------------------------
 MisMatch<-1 # Genomes with more than this number of substitutions vs patient samples are removed
-Trim5<-360 # Start position from 5' (bp before this number are deleted); NA or 0 for no trim
-Trim3<-30420 # End position from 3' (bp after this number are deleted); NA 0 for no trim
+Trim5<-359 # Start position from 5' (bp before this number are deleted); NA or 0 for no trim
+Trim3<-30478 # End position from 3' (bp after this number are deleted); NA 0 for no trim
 ## IMPORTANT: Trim5 and Trim3 here should match Distcalc.R
 #------------------------------------------------------------------------------
 
@@ -18,8 +18,20 @@ PangoLins<-read.csv("./inputdata/PangoLins.csv")
 
 # remove misaligned
 x<-lengths(alignIn)
-alignment<-alignIn[x==max(x)]
+alignment<-alignIn[x==30958]
+
+# Set trim sites if not user-defined
+if(Trim5 %in% c(NA,0)){
+  Trim5<-1
+}
+if(Trim3 %in% c(NA,0)){
+  Trim3<-max(x)
+}
+
+
 x<-NULL
+
+
 
 # Simplify distance matrix data
 ## 1. Filter dissimilar
@@ -49,6 +61,7 @@ aligned_df <- data.frame(ID = gsub("Sample[ _]", "S", sub_align@ranges@NAMES),
                          stringsAsFactors = FALSE)
 # Replace PANGOLIN ID with Lineage name
 for(i in 1:nrow(PangoLins)){
+  print(paste(aligned_df$ID[grep(PangoLins$GISAID.ID[i],aligned_df$ID)],"<-",PangoLins$lineage[i]))
   aligned_df$ID[grep(PangoLins$GISAID.ID[i],aligned_df$ID)]<-PangoLins$lineage[i]
 }
 # Add Wuhan if missing (e.g. renamed to PANGOLIN lineage A)
