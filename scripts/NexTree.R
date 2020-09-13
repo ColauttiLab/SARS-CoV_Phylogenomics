@@ -4,12 +4,13 @@ library(dplyr)
 library(ggtree)
 
 #------------------------- User-defined parameters --------------------------
-Iters<-1#0000 # Bootstrap iterations (set low (10 or 100) for quick tree; 10000 for final published tree)
+Iters<-1000#0 # Bootstrap iterations (set low (10 or 100) for quick tree; 10000 for final published tree)
 Scale<-0.001 # Scale bar to use on phylogeny
-RemoveR<-NA # Refere
 CombSamp<-T # If T, combine identical patient sequences in phylogeny
 Comb<-10 # Used to shorten reference sequence table; Regions with < Comb are combined into 'Other' category
-Exclude<-c("B.6","B.7","B.2","B.5","B.4","B.3","A.4","A.5","A.6","A.3","A.2","B.1.6","B.1.22","B.1.19") # Node names to exclude (run with NA to see full phylogeny)
+Exclude<-c("A.2","A.3","A.4","A.5","A.6",
+           "B.2","B.3","B.4","B.5","B.6","B.7",
+           "B.1.6","B.1.22","B.1.19") # Node names to exclude (run with NA to see full phylogeny)
 #------------------------------------------------------------------------------
 
 # Import polymorphism data
@@ -89,7 +90,6 @@ uniq_pat_seqs<-intersect(grep(FALSE,duplicated(DistMat[,ref_seqs])),pat_seqs)
 # Find closest sequence(s) for each patient sample
 keep_seqs<-DNAStringSet(NULL)
 SeqTable<-data.frame(NULL)
-#SeqTable<-data.frame(ID=NA,Region=NA,N=NA,Variants=NA)
 r<-1
 for(i in 1:length(uniq_pat_seqs)){
   Idx <- uniq_pat_seqs[i] # Index linking patient sample to DistMat
@@ -123,14 +123,6 @@ SeqTable<-SeqTable %>%
   group_by(ID,Region) %>%
   summarize(N=sum(N))
 
-# Simplify table and sequences (remove duplicates)
-#SeqTable<-SeqTable[ !duplicated(SeqTable$Refs) , ]
-#keep_seqs<-keep_seqs[keep_seqs@ranges@NAMES %in% SeqTable$ID]
-#for(Row in 1:nrow(SeqTable)){
-#  SeqTable$ID[Row]<-paste0("r",Row)
-#  keep_seqs@ranges@NAMES[Row]<-paste0("r",Row)
-#}
-
 # Combine Regions with only a few refs (see user-defined variable 'Comb', above)
 SeqTable_short<-SeqTable[SeqTable$N < Comb,] %>%
   arrange(Region) %>%
@@ -153,9 +145,10 @@ write.csv(SeqTable,"./outputs/RefSeqs_long.csv")
 ## Sequence setup
 # Combine samples with same sequence (ignoring N)
 if(CombSamp == T){
+  # Calculate distance matrix for patient samples only
   patDist<-dist.dna(as.DNAbin(dnaIn[pat_seqs]),model="N",pairwise.deletion=T)
   patDistMat<-as.matrix(patDist)
-  pSeqs<-dnaIn[pat_seqs] # Save unique sequences
+  pSeqs<-dnaIn[pat_seqs] # Patient sequences
   pat_seq_keep<-DNAStringSet(NULL)
   r<-1
   for(i in 1:length(pSeqs)){
@@ -172,6 +165,19 @@ if(CombSamp == T){
       r<-r+1
     }
   }
+  # Remove duplicated patient sequences (happens due to ambiguous bases)
+  dupSeq<-strsplit(paste(names(pat_seq_keep),collapse = ","),",")[[1]]
+  dupSeq<-dupSeq[duplicated(dupSeq)]
+  if(length(dupSeq) > 1) {
+    for(i in 1:length(dupSeq)){
+      pat_seq_keep@ranges@NAMES<-gsub(dupSeq[i],"",pat_seq_keep@ranges@NAMES)
+    }
+    pat_seq_keep@ranges@NAMES<-gsub(",+",",",pat_seq_keep@ranges@NAMES)
+    pat_seq_keep@ranges@NAMES<-gsub(",$","",pat_seq_keep@ranges@NAMES)
+    pat_seq_keep<-DNAStringSet(c(pat_seq_keep,dnaIn[names(dnaIn) %in% dupSeq]))
+  }
+  # Cleanup
+  # Final sequences for graphing
   phy_seqs<-DNAStringSet(c(dnaIn[c(Wuhan,pang_seqs)],pat_seq_keep,keep_seqs))
 } else {
   phy_seqs<-DNAStringSet(c(dnaIn[c(Wuhan,pat_seqs,pang_seqs)],keep_seqs))
@@ -191,7 +197,7 @@ ml <- optimize_likelihood(phy_object, dbtree) #Stochastic rearrangement > NNI, -
 bstree <- bootstrap_tree(ml,Iters,Scale,"./intermediatedata/BSTree") #Bootstrap
 
 #Root
-rooted.tree <- root(bstree, which(bstree$tip.label == "Wuhan/WH04/2020"))
+rooted.tree <- root(bstree, which(bstree$tip.label == "A"))
 
 # ---------------- Tree file output -----------------
 #Save Tree
@@ -210,39 +216,67 @@ regionGroups<-split(bstree$tip.label,regions)
 WtDTcol<-groupOTU(rooted.tree,regionGroups)
 
 #Color palettes
-CC <- c("#06BCC1","#07004D","#A44A3F","#C1AAC0")
-Pal <- c("#47682C","#119DA4","#D64933","#1F2041") #Group Colours: PANGOLIN,Reference,Sample,Wuhan
+CC <- c("#b070eb","#d4d4b0","#b5e550","#607c3c","#809c13","#d4e69c","#abc32f") # Clade colours
+Pal <- c("#47682C","#119DA4","#D64933","#1F2041") # Group Colours: PANGOLIN,Reference,Sample,Wuhan
 
-
-nodetree<- ggtree(WtDTcol,layout="rectangular",alpha=0.3) + geom_text2(aes(label=node), hjust=-.3, size=1) + geom_tippoint(aes(colour=group),size=0.5,shape=19) + geom_tiplab(size=0.3)
-#nodetree$data[nodetree$data$node %in% c(19,21), "x"] = mean(nodetree$data$x)
-pdf(file="outputs/PhloNodes.pdf", width=12, height=8)
+# Node labels
+nodetree<- ggtree(WtDTcol,layout="rectangular",alpha=0.3) + 
+  scale_colour_manual(values=Pal) +
+  geom_text2(aes(label=node), hjust=-.3, size=1) + 
+  geom_tippoint(aes(colour=group),size=0.5,shape=19) + 
+  geom_tiplab(aes(colour=group), hjust=0, align=T, linetype=3, linesize=0.5)
+nodetree
+pdf(file="outputs/PhyloNodes.pdf", width=12, height=12)
   nodetree
 dev.off()
 
-
-#ggtree
-fullplot<-ggtree(WtDTcol,layout='circular',alpha=0.5,linetype=1,size=0.1) +
+# Basic Tree
+simpleplot<-ggtree(WtDTcol,layout='circular',alpha=0.5,linetype=1,size=0.1) +
   scale_colour_manual(values=Pal) +
-  
   geom_nodelab2(hjust=-0.2,size=2) +
-#  geom_treescale(x = 0.01, y = 38, fontsize = 2, linesize = 0.1) +
-  
-  #geom_hilight(node=34, fill=CC[1], extendto=0.0004) +
-  #geom_hilight(node=54, fill=CC[2], extendto=0.0004) +
-  #geom_hilight(node=37, fill=CC[3], extendto=0.0004) +
-  
   geom_tippoint(aes(colour=group),size=1,shape=19) +
-  
-  #geom_cladelabel(node=34,label="S Clade",hjust=0.5,offset=0.0001,offset.text=0.01,colour=CC[1],align=T,linetype=NA) +
-  #geom_cladelabel(node=54,label="G Clade 1",hjust=0.5,offset=0.0001,offset.text=0.01,colour=CC[2],align=T,linetype=NA) +
-  #geom_cladelabel(node=37,label="G Clade 2",hjust=0.5,offset=0.0001,offset.text=0.01,colour=CC[3],align=T,linetype=NA) +
-  
   theme_tree(legend.position="none") 
-fullplot
+simpleplot
 #Save
-pdf(file="outputs/figures/Fig2.pdf", width=12, height=8)
-   fullplot + geom_tiplab2(aes(colour=group), hjust=0, align=T, linetype=3, linesize=0.5) #dont forget ab tiplab2
+pdf(file="outputs/figures/Fig2_simple.pdf", width=16, height=12)
+  simpleplot + geom_tiplab2(aes(colour=group), hjust=0, align=T, linetype=3, linesize=0.5) #dont forget ab tiplab2
 dev.off()
 
+# Final Figure
+fullplot<-ggtree(WtDTcol,layout='circular',size=1) +
+  scale_colour_manual(values=Pal) +
+#  geom_treescale(x = 0.01, y = 38, fontsize = 2, linesize = 0.1) +
+
+  geom_hilight(node=55, fill=CC[1], extendto=0.6) +
+  geom_hilight(node=59, fill=CC[2], extendto=0.6) +
+  geom_hilight(node=88, fill=CC[3], extendto=0.5) +
+  geom_hilight(node=95, fill=CC[4], extendto=0.5) +
+  geom_hilight(node=84, fill=CC[5], extendto=0.5) +
+  geom_hilight(node=80, fill=CC[6], extendto=0.5) +  
+    geom_hilight(node=33, fill=CC[6], extendto=0.5) +  
+  geom_hilight(node=81, fill=CC[3], extendto=0.5) +
+  geom_hilight(node=75, fill=CC[7], extendto=0.5) +
+  geom_hilight(node=83, fill=CC[6], extendto=0.5) +
+  geom_hilight(node=78, fill=CC[4], extendto=0.5) +
+
+  geom_cladelabel(node=55,label="A.1",hjust=0.5,offset.text=0.28,align=T,linetype=NA) +
+  geom_cladelabel(node=59,label="B.1",hjust=0.5,offset.text=0.28,align=T,linetype=NA) +
+  geom_cladelabel(node=88,label="B.1.5",hjust=0.5,offset.text=0.15,align=T,linetype=NA) +
+  geom_cladelabel(node=95,label="B.1.1",hjust=0.5,offset.text=0.15,align=T,linetype=NA) +
+  geom_cladelabel(node=84,label="B.1.13",hjust=0.5,offset.text=0.15,align=T,linetype=NA) +
+  geom_cladelabel(node=80,label="B.1.12",hjust=0.5,offset.text=0.15,align=T,linetype=NA) +
+  geom_cladelabel(node=81,label="B.1.2",hjust=0.5,offset.text=0.15,align=T,linetype=NA) +
+  geom_cladelabel(node=75,label="B.1.3",hjust=0.5,offset.text=0.15,align=T,linetype=NA) +
+  geom_cladelabel(node=83,label="B.1.111",hjust=0.5,offset.text=0.15,align=T,linetype=NA) +
+  geom_cladelabel(node=78,label="B.1.114",hjust=0.5,offset.text=0.15,align=T,linetype=NA) +
+  
+  geom_nodelab2(hjust=-0.2,size=2) +  
+  geom_tippoint(aes(colour=group),size=2,shape=19) +
+  geom_tiplab2(aes(colour=group), hjust=0, align=T, linetype=3, linesize=1) +
+  theme_tree(legend.position="none") 
+fullplot
+  #Save
+pdf(file="outputs/figures/Fig2.pdf", width=16, height=12)
+  fullplot 
+dev.off()
 
