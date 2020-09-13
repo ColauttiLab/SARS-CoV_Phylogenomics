@@ -1,4 +1,7 @@
-# SARS-COV-19 Analysis Pipeline
+# A streamlined phylogenomic analysis pipeline for transmission analysis of SARS-CoV-2
+
+    David Huang and Robert I Colautti
+    Queen's University, Canada
 
 #### Analysis Files from 2020 COV-19 genome study by *Sjaarda et al*: **"Phylogenomics reveals viral evolution, sources, transmission, and superinfection in early-stage COVID-19 patients in Eastern Ontario, Canada"** https://www.biorxiv.org/content/10.1101/2020.06.25.171744v1
 
@@ -13,6 +16,7 @@
     * (optional) 3b. Run *NextStrainExamine.R* to identify trim sites (e.g. junk polymorphisms on 3' and 5' ends); these can be removed using the **Trim5** and **Trim3** user-defined parameters in *NextStrainFilter.R* and *Distcalc.R*
 4. Run *Distcalc.R* to count N substitutions for each patient sample against each reference genome in the GISAID database
 5. Run *NextStrainFilter.R* to add PANGOLIN lineages, remove 'clutter' (phylogenetically uninformative reference sequences and monomorphic sites) and group identical genomes shared by multiple reference IDs
+    * (optional) 5b. Run *NextStrainVariantMap.R* to check variants used in Distcalc.R **NOTE:** genome positions on x-axis likely won't match reference genome since they are based on GISAID/Nextstrain alignment rather than reference genome.
 6. Run *NexTree.R* to produce phylogeny
 
 NOTES:  
@@ -39,6 +43,7 @@ NOTES:
 - [X] Replace BLAST filter with full-genome, pairwise comparison
 
 ### Future Plans
+- [ ] Option to include PANGOLIN lineages with patient samples when defining polymoprhic sites
 - [ ] Parse GISAID genomes by collection date and use to filter potential sources? 
 - [ ] Future projects: New pipeline similar to Distcalc.R + NextTree.R code but directly from .vcf? 
 - [ ] Split NexTree.R into 2 scripts: 1. NexFilt2.R to filter based on polymorphisms shared with patient samples; 2. NexTree.R to estimate Phylogeny & graph
