@@ -1,15 +1,19 @@
 library(Biostrings)
 
-#------------------------- User-defined parameters --------------------------
-MisMatch<-1 # Genomes with more than this number of substitutions vs patient samples are removed
-Trim5<-359 # Start position from 5' (bp before this number are deleted); NA or 0 for no trim
-Trim3<-30478 # End position from 3' (bp after this number are deleted); NA 0 for no trim
+#------------------------- User-defined parameters
+# Genomes with more than this number of substitutions vs patient samples are removed
+MisMatch<-1 
+# Start position from 5' (bp before this number are deleted); NA or 0 for no trim
+Trim5<-359 
+# End position from 3' (bp after this number are deleted); NA 0 for no trim
+Trim3<-30478 
 ## IMPORTANT: Trim5 and Trim3 here should match Distcalc.R
-#------------------------------------------------------------------------------
+#-------------------------------------------------
 
 #Load data (see mafft.sh for details on how these files were created)
 ## aligned sequences
-alignIn <- readDNAStringSet("./intermediatedata/BRaligned.afa") # Alignment from Nextstrain (msa)
+# Alignment from Nextstrain (msa)
+alignIn <- readDNAStringSet("./intermediatedata/BRaligned.afa") 
 ## Distance calculations
 dif_mat <- read.csv("./intermediatedata/DistMat.csv",row.names=1)
 names(dif_mat)<-c("Sample","Ref","Dist")

@@ -3,15 +3,19 @@ library(phangorn)
 library(dplyr)
 library(ggtree)
 
-#------------------------- User-defined parameters --------------------------
-Iters<-1000#0 # Bootstrap iterations (set low (10 or 100) for quick tree; 10000 for final published tree)
-Scale<-0.001 # Scale bar to use on phylogeny
-CombSamp<-T # If T, combine identical patient sequences in phylogeny
-Comb<-10 # Used to shorten reference sequence table; Regions with < Comb are combined into 'Other' category
+#------------------------- User-defined parameters
+# Bootstrap iterations (set low (10 or 100) for quick tree; 10000 for final published tree)
+Iters<-1000
+# Scale bar to use on phylogeny
+Scale<-0.001
+# If T, combine identical patient sequences in phylogeny
+CombSamp<-T 
+# Used to shorten reference sequence table; Regions with < Comb are combined into 'Other' category
+Comb<-10 
 Exclude<-c("A.2","A.3","A.4","A.5","A.6",
            "B.2","B.3","B.4","B.5","B.6","B.7",
            "B.1.6","B.1.22","B.1.19") # Node names to exclude (run with NA to see full phylogeny)
-#------------------------------------------------------------------------------
+#------------------------------------------------
 
 # Import polymorphism data
 dnaIn<-readDNAStringSet("./intermediatedata/NextFilt.afa")
